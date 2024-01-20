@@ -1,29 +1,31 @@
 const path = require('path');
 const fs = require('fs/promises');
+const { match } = require('assert');
 const src = path.join(__dirname, 'styles');
 const dist = path.join(__dirname, 'project-dist');
 const componentsFilesPath = path.join(__dirname, 'components');
 const assets = path.join(__dirname, 'assets');
 
 async function createDistFolder(targetPath) {
-  let componentInTemplate = [];
+  let componentInDir = [];
   await fs.mkdir(targetPath, { recursive: true });
   let template = '';
-  await fs
-    .readFile(path.join(__dirname, 'template.html'))
-    .then((chunk) => {
-      template += chunk;
-    })
-    .then(() => {
-      const regex = /{{(.*?)}}/g;
-      let match;
-      while ((match = regex.exec(template)) !== null) {
-        componentInTemplate.push(match[1]);
-      }
+  await fs.readFile(path.join(__dirname, 'template.html')).then((chunk) => {
+    template += chunk;
+  });
+  await fs.readdir(componentsFilesPath).then((files) => {
+    files.forEach((el) => {
+      componentInDir.push(path.parse(componentsFilesPath + `/${el}`).name);
     });
-  const componentsFiles = await fs.readdir(componentsFilesPath);
-  console.log(componentInTemplate);
-  console.log(componentsFiles);
+  });
+  for (let i = 0; i < componentInDir.length; i += 1) {
+    fs.readFile(componentsFilesPath + `/${componentInDir[i]}.html`, {
+      encoding: 'utf8',
+    }).then((data) => {
+      let replased = template.replace(/{{(.*?)}}/g, data);
+      console.log(replased);
+    });
+  }
   fs.writeFile(targetPath + '/index.html', template);
 }
 createDistFolder(dist);
@@ -73,4 +75,4 @@ createDistFolder(dist);
 
 // copyFilesRecursive(assets, dist)
 //   .then(() => console.log('Files successfully copied'))
-//   .catch((err) => console.error('Error copying files:', err));
+//   .catch((err) => console.error('Error copying files:', err))
