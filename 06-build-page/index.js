@@ -51,18 +51,26 @@ try {
 
 // // Copy assets to project dir
 async function copyFilesRecursive(sourceDir, targetDir) {
-  const files = await fs.readdir(sourceDir);
+  await fs.mkdir(targetDir, { recursive: true });
+  const sourceFiles = await fs.readdir(sourceDir);
+  const targetFiles = await fs.readdir(targetDir);
 
-  for (const file of files) {
+  for (const file of sourceFiles) {
     const sourcePath = `${sourceDir}/${file}`;
     const targetPath = `${targetDir}/${file}`;
     const stats = await fs.stat(sourcePath);
 
     if (stats.isDirectory()) {
-      await fs.mkdir(targetPath, { recursive: true });
       await copyFilesRecursive(sourcePath, targetPath);
     } else {
       await fs.copyFile(sourcePath, targetPath);
+    }
+  }
+
+  for (const file of targetFiles) {
+    if (!sourceFiles.includes(file)) {
+      const filePath = `${targetDir}/${file}`;
+      await fs.unlink(filePath);
     }
   }
 }
