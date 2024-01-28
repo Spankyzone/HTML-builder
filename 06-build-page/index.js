@@ -66,7 +66,6 @@ async function copyFilesRecursive(sourceDir, targetDir) {
     }
   }
 }
-
 copyFilesRecursive(assets, path.join(dist, 'assets'))
   .then(() => console.log('Files successfully copied'))
   .catch((err) => console.error('Error copying files:', err));
